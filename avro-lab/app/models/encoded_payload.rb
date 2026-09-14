@@ -2,19 +2,21 @@ class EncodedPayload
   class Error < StandardError; end
 
   FORMATS = %w[json avro].freeze
+  CODECS = %w[null deflate].freeze
   MIN_REPEATS = 1
   MAX_REPEATS = 100_000
 
-  attr_reader :bytes, :content_type, :filename, :encode_ms, :schema_ms, :records
+  attr_reader :bytes, :content_type, :filename, :encode_ms, :schema_ms, :records, :codec
 
-  def self.build(json_text:, repeats:, format:)
-    new(json_text:, repeats:, format:).build
+  def self.build(json_text:, repeats:, format:, codec: nil)
+    new(json_text:, repeats:, format:, codec:).build
   end
 
-  def initialize(json_text:, repeats:, format:)
+  def initialize(json_text:, repeats:, format:, codec: nil)
     @source = parse_json(json_text)
     @repeats = validate_repeats(repeats)
     @format = validate_format(format)
+    @codec = validate_codec(codec)
   end
 
   def build
@@ -60,6 +62,14 @@ class EncodedPayload
       format
     end
 
+    def validate_codec(codec)
+      codec = codec.to_s.empty? ? "null" : codec.to_s
+      unless CODECS.include?(codec)
+        raise Error, "codec must be one of #{CODECS.join(", ")}"
+      end
+      codec
+    end
+
     def json?
       @format == "json"
     end
@@ -83,15 +93,16 @@ class EncodedPayload
 
     def encode_avro(schema)
       @records = Array.new(@repeats) { @source }
-      @bytes = write_container_file(schema, @records)
+      @bytes = write_container_file(schema, @records, @codec)
       @content_type = "application/octet-stream"
-      @filename = "payload-#{@repeats}.avro"
+      suffix = @codec == "deflate" ? "-deflate" : ""
+      @filename = "payload-#{@repeats}#{suffix}.avro"
     end
 
-    def write_container_file(schema, records)
+    def write_container_file(schema, records, codec)
       io = StringIO.new(+"", "wb")
       io.set_encoding(Encoding::BINARY)
-      writer = Avro::DataFile::Writer.new(io, Avro::IO::DatumWriter.new(schema), schema)
+      writer = Avro::DataFile::Writer.new(io, Avro::IO::DatumWriter.new(schema), schema, codec)
       records.each { |record| writer << record }
       writer.close
       io.string

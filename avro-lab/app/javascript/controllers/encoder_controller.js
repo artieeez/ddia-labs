@@ -16,7 +16,7 @@ import { Controller } from "@hotwired/stimulus"
 //     <div data-encoder-target="status"></div>
 //   </div>
 export default class extends Controller {
-  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "avroButton", "status", "showSchema"]
+  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "avroButton", "avroDeflateButton", "status", "showSchema"]
 
   connect() {
     this.statusTarget.replaceChildren()
@@ -28,7 +28,11 @@ export default class extends Controller {
   }
 
   encodeAvro() {
-    this.encode("avro")
+    this.encode("avro", "null")
+  }
+
+  encodeAvroDeflate() {
+    this.encode("avro", "deflate")
   }
 
   toggleSchema() {
@@ -57,7 +61,7 @@ export default class extends Controller {
     this.repeatOutputTarget.textContent = this.repeatsTarget.value
   }
 
-  async encode(format) {
+  async encode(format, codec) {
     if (this.busy) return
     const sourceText = this.jsonTextTarget.value
     const repeats = String(this.repeatsTarget.value)
@@ -78,7 +82,7 @@ export default class extends Controller {
           "Accept": "application/octet-stream, application/json, text/plain",
           "X-CSRF-Token": csrfToken()
         },
-        body: JSON.stringify({ encoding: { json_text: sourceText, repeats, format } })
+        body: JSON.stringify({ encoding: { json_text: sourceText, repeats, format, codec } })
       })
       if (!response.ok) {
         throw new Error(await errorMessage(response))
@@ -124,9 +128,9 @@ export default class extends Controller {
         download(bytes, `payload-${repeats}.json`, "application/json")
       }
 
-      this.timeline.addRun({ format, repeats, segments, meta })
+      this.timeline.addRun({ format, codec, repeats, segments, meta })
     } catch (error) {
-      this.timeline.addRun({ format, repeats, error: error.message })
+      this.timeline.addRun({ format, codec, repeats, error: error.message })
     } finally {
       this.setBusy(false)
     }
@@ -154,6 +158,7 @@ export default class extends Controller {
     this.busy = busy
     this.jsonButtonTarget.disabled = busy
     this.avroButtonTarget.disabled = busy
+    this.avroDeflateButtonTarget.disabled = busy
     this.statusTarget.classList.toggle("is-busy", busy)
   }
 }
@@ -213,13 +218,13 @@ class Timeline {
 
   addRun(run) {
     const normalized = this.normalize(run)
-    // One bar per (format, repeats): replacing an earlier identical run keeps
-    // the timeline comparable (AVRO x100 + JSON x100) instead of piling up
-    // duplicates from repeated clicks.
-    this.runs = this.runs.filter((prev) => !(prev.format === run.format && prev.repeats === run.repeats))
+    // One bar per (format, codec, repeats): replacing an earlier identical run
+    // keeps the timeline comparable (JSON x100, AVRO x100, AVRO·DEFLATE x100)
+    // instead of piling up duplicates from repeated clicks.
+    this.runs = this.runs.filter((prev) => !(prev.format === run.format && prev.codec === run.codec && prev.repeats === run.repeats))
     this.runs.unshift(normalized)
     this.runs = this.runs.slice(0, MAX_RUNS)
-    console.log(`[avro-lab] ${run.format} x${run.repeats}`, run)
+    console.log(`[avro-lab] ${run.format} x${run.repeats}${run.codec ? ` (${run.codec})` : ""}`, run)
     this.render()
   }
 
@@ -239,7 +244,7 @@ class Timeline {
       <span class="legend__item"><i class="legend__swatch legend__swatch--schema"></i>schema (server, Avro)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--download"></i>download (client)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--decode"></i>decode (client)</span>
-      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline</span>`
+      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline · deflate = zlib-compressed blocks (smaller download, more CPU)</span>`
     return legend
   }
 
@@ -266,7 +271,7 @@ class Timeline {
 
     const label = document.createElement("div")
     label.className = "run-bar__label"
-    label.textContent = `${run.formatLabel} ×${run.repeats}`
+    label.textContent = `${run.formatLabel} ×${run.repeats}${run.codec === "deflate" ? " · deflate" : ""}`
     if (run.meta.bytes !== undefined || run.meta.count !== undefined) {
       label.title = [run.meta.bytes !== undefined ? formatBytes(run.meta.bytes) : null, run.meta.count !== null && run.meta.count !== undefined ? `${run.meta.count} records` : null].filter(Boolean).join(" · ")
     }

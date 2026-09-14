@@ -1,8 +1,8 @@
 require "test_helper"
 
 class EncodedPayloadTest < ActiveSupport::TestCase
-  def build_payload(source_json, repeats: 3, format: "json")
-    EncodedPayload.build(json_text: source_json, repeats: repeats, format: format)
+  def build_payload(source_json, repeats: 3, format: "json", codec: nil)
+    EncodedPayload.build(json_text: source_json, repeats: repeats, format: format, codec: codec)
   end
 
   test "encodes json as an array of repeats" do
@@ -13,7 +13,6 @@ class EncodedPayloadTest < ActiveSupport::TestCase
     assert_equal [ { "a" => 1 }, { "a" => 1 }, { "a" => 1 } ], JSON.parse(payload.bytes)
     assert_operator payload.encode_ms, :>=, 0
     assert_equal 0, payload.schema_ms
-    assert_equal 0, payload.schema_ms
   end
 
   test "encodes avro as a container file with one record per repeat" do
@@ -23,8 +22,37 @@ class EncodedPayloadTest < ActiveSupport::TestCase
     assert_equal "payload-3.avro", payload.filename
     assert_operator payload.encode_ms, :>=, 0
     assert_operator payload.schema_ms, :>, 0
+    assert_equal [ { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" } ], read_records(payload.bytes)
+  end
+
+  test "encodes deflate avro, round-trips, and names the file distinctly" do
+    payload = build_payload('{"a":1,"b":"x"}', repeats: 3, format: "avro", codec: "deflate")
+
+    assert_equal "payload-3-deflate.avro", payload.filename
+    assert_operator payload.encode_ms, :>=, 0
     assert_operator payload.schema_ms, :>, 0
     assert_equal [ { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" } ], read_records(payload.bytes)
+  end
+
+  test "deflate compresses repetitive payloads below the null-codec size" do
+    source = { "title" => "some moderately long string value used to give deflate room to compress", "tags" => %w[alpha beta gamma] }
+    null_payload = build_payload(source.to_json, repeats: 200, format: "avro", codec: "null")
+    deflate_payload = build_payload(source.to_json, repeats: 200, format: "avro", codec: "deflate")
+
+    assert_operator deflate_payload.bytes.bytesize, :<, null_payload.bytes.bytesize
+  end
+
+  test "records the codec in the container meta" do
+    deflate_payload = build_payload('{"a":1}', format: "avro", codec: "deflate")
+    assert_equal "deflate", read_container_meta(deflate_payload.bytes)["avro.codec"]
+
+    null_payload = build_payload('{"a":1}', format: "avro")
+    assert_equal "null", read_container_meta(null_payload.bytes)["avro.codec"]
+  end
+
+  test "rejects unknown codecs" do
+    error = assert_raises(EncodedPayload::Error) { build_payload('{"a":1}', format: "avro", codec: "snappy") }
+    assert_match(/codec must be one of/, error.message)
   end
 
   test "avro round-trips nested values and floating point" do

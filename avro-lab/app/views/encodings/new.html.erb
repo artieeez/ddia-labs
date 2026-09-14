@@ -2,8 +2,9 @@
   <header class="lab__head">
     <h1>Avro Lab</h1>
     <p class="lab__lede">
-      Write a JSON object, pick a repeat count, then download it twice: as plain JSON
-      (<strong>baseline</strong>) or as an Avro container that the browser decodes back to JSON.
+      Write a JSON object, pick a repeat count, then download it: as plain JSON
+      (<strong>baseline</strong>), as an un-compressed Avro container, or as an Avro container
+      with <strong>deflate</strong> (zlib) block compression — the browser decodes both back to JSON.
       Each run draws a timeline bar — schema derivation (server, Avro only), encode (server),
       download (client), decode (client) — and logs the full numbers to the console. A checkbox
       shows or hides the schema segment (on by default). Transfer size and latency are visible in the
@@ -33,7 +34,8 @@
 
   <div class="lab__panel lab__actions">
     <button type="button" class="lab__button" data-action="encoder#encodeJson" data-encoder-target="jsonButton">Download as JSON (baseline)</button>
-    <button type="button" class="lab__button lab__button--avro" data-action="encoder#encodeAvro" data-encoder-target="avroButton">Download as Avro (decode to JSON)</button>
+    <button type="button" class="lab__button lab__button--avro" data-action="encoder#encodeAvro" data-encoder-target="avroButton">Download as Avro (null codec)</button>
+    <button type="button" class="lab__button lab__button--avro" data-action="encoder#encodeAvroDeflate" data-encoder-target="avroDeflateButton">Download as Avro (deflate)</button>
   </div>
 
   <div class="lab__panel lab__options">

@@ -8,6 +8,7 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "textarea#json_text"
     assert_select "button[data-action='encoder#encodeJson']"
     assert_select "button[data-action='encoder#encodeAvro']"
+    assert_select "button[data-action='encoder#encodeAvroDeflate']"
   end
 
   test "create encodes and downloads json" do
@@ -47,6 +48,27 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_match(/invalid JSON/, JSON.parse(response.body)["error"])
+  end
+
+  test "create encodes and downloads deflate avro that round-trips to json" do
+    post encoding_path, params: { encoding: { json_text: '{"a":1,"b":"x"}', repeats: 2, format: "avro", codec: "deflate" } }
+
+    assert_response :success
+    assert_includes response.headers["Content-Disposition"], "payload-2-deflate.avro"
+    assert response.headers.key?("X-Encode-Ms")
+    assert response.headers.key?("X-Schema-Ms")
+
+    io = StringIO.new(response.body.b, "rb")
+    reader = Avro::DataFile::Reader.new(io, Avro::IO::DatumReader.new)
+    records = reader.map(&:to_h)
+    assert_equal [ { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" } ], records
+  end
+
+  test "create rejects unknown codecs" do
+    post encoding_path, params: { encoding: { json_text: '{"a":1}', repeats: 1, format: "avro", codec: "snappy" } }
+
+    assert_response :unprocessable_entity
+    assert_match(/codec/, JSON.parse(response.body)["error"])
   end
 
   test "create rejects out-of-range repeats" do

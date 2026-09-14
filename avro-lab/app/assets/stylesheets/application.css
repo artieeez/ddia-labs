@@ -8,6 +8,7 @@
   --avro: #8b3dff;
   --danger: #b3261e;
   --time-encode: #0057b8;
+  --time-schema: #b36200;
   --time-download: #2f9e63;
   --time-decode: #8b3dff;
   --time-track: #eceae5;
@@ -149,6 +150,23 @@ body {
   opacity: 0.45;
 }
 
+.lab__options {
+  padding-block: 12px;
+}
+
+.lab__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.lab__checkbox input {
+  accent-color: var(--accent);
+}
+
 .timeline__legend {
   display: flex;
   flex-wrap: wrap;
@@ -173,6 +191,7 @@ body {
 }
 
 .legend__swatch--encode { background: var(--time-encode); }
+.legend__swatch--schema { background: var(--time-schema); }
 .legend__swatch--download { background: var(--time-download); }
 .legend__swatch--decode { background: var(--time-decode); }
 
@@ -200,6 +219,7 @@ body {
 }
 
 .run-bar__seg--encode { background: var(--time-encode); }
+.run-bar__seg--schema { background: var(--time-schema); }
 .run-bar__seg--download { background: var(--time-download); }
 .run-bar__seg--decode { background: var(--time-decode); }
 

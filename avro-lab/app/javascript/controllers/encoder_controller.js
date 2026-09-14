@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Encode-and-download lab behavior: POST the editor JSON to the server,
-// download the artifact, and time three phases — server encode, client
-// download of the response body, client decode (Avro container decode or
-// JSON.parse for the baseline). Each run renders a timeline bar with a
-// colored segment per phase; full numbers go to the console.
+// download the artifact, and time four phases — server schema derivation
+// (Avro only), server encode, client download of the response body, client
+// decode (Avro container decode or JSON.parse for the baseline). Each run
+// renders a timeline bar with a colored segment per phase; a checkbox hides
+// the schema segment. Full numbers go to the console.
 //
 //   <div data-controller="encoder">
 //     <textarea data-encoder-target="jsonText"></textarea>
@@ -15,7 +16,7 @@ import { Controller } from "@hotwired/stimulus"
 //     <div data-encoder-target="status"></div>
 //   </div>
 export default class extends Controller {
-  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "avroButton", "status"]
+  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "avroButton", "status", "showSchema"]
 
   connect() {
     this.statusTarget.replaceChildren()
@@ -28,6 +29,10 @@ export default class extends Controller {
 
   encodeAvro() {
     this.encode("avro")
+  }
+
+  toggleSchema() {
+    this.timeline.render(this.showSchemaTarget.checked)
   }
 
   syncRepeats() {
@@ -80,14 +85,21 @@ export default class extends Controller {
       }
 
       const encodeMs = Number(response.headers.get("X-Encode-Ms") || "0")
+      const schemaMs = Number(response.headers.get("X-Schema-Ms") || "0")
       const transferStarted = performance.now()
       const bytes = await response.arrayBuffer()
       const transferMs = performance.now() - transferStarted
 
-      const segments = [
-        { key: "encode", label: "encode", ms: encodeMs },
-        { key: "download", label: "download", ms: transferMs }
-      ]
+      const segments = format === "avro"
+        ? [
+          { key: "schema", label: "schema", ms: schemaMs },
+          { key: "encode", label: "encode", ms: encodeMs },
+          { key: "download", label: "download", ms: transferMs }
+        ]
+        : [
+          { key: "encode", label: "encode", ms: encodeMs },
+          { key: "download", label: "download", ms: transferMs }
+        ]
       const meta = { bytes: bytes.byteLength }
 
       if (format === "avro") {
@@ -195,6 +207,7 @@ class Timeline {
   constructor(container) {
     this.container = container
     this.runs = []
+    this.showSchema = true
     this.container.appendChild(this.legend())
   }
 
@@ -223,13 +236,15 @@ class Timeline {
     legend.className = "timeline__legend"
     legend.innerHTML = `
       <span class="legend__item"><i class="legend__swatch legend__swatch--encode"></i>encode (server)</span>
+      <span class="legend__item"><i class="legend__swatch legend__swatch--schema"></i>schema (server, Avro)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--download"></i>download (client)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--decode"></i>decode (client)</span>
       <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline</span>`
     return legend
   }
 
-  render() {
+  render(showSchema = this.showSchema) {
+    this.showSchema = showSchema
     const legend = this.container.firstChild
     this.container.replaceChildren(legend)
     const maxTotal = Math.max(...this.runs.map((run) => run.totalMs()), 1)
@@ -265,7 +280,8 @@ class Timeline {
 
     const track = document.createElement("div")
     track.className = "run-bar__track"
-    run.segments.forEach((segment) => {
+    const segments = this.showSchema ? run.segments : run.segments.filter((segment) => segment.key !== "schema")
+    segments.forEach((segment) => {
       const segmentEl = document.createElement("div")
       segmentEl.className = `run-bar__seg run-bar__seg--${segment.key}`
       segmentEl.style.width = `${Math.max(2, segment.ms * scale)}px`

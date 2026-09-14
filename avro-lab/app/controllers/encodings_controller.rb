@@ -10,6 +10,7 @@ class EncodingsController < ApplicationController
       format: encoding[:format]
     )
     response.set_header("X-Encode-Ms", @payload.encode_ms.to_s)
+    response.set_header("X-Schema-Ms", @payload.schema_ms.to_s)
     send_data @payload.bytes,
               type: @payload.content_type,
               filename: @payload.filename,

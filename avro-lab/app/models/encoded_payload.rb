@@ -5,7 +5,7 @@ class EncodedPayload
   MIN_REPEATS = 1
   MAX_REPEATS = 100_000
 
-  attr_reader :bytes, :content_type, :filename, :encode_ms, :records
+  attr_reader :bytes, :content_type, :filename, :encode_ms, :schema_ms, :records
 
   def self.build(json_text:, repeats:, format:)
     new(json_text:, repeats:, format:).build
@@ -18,13 +18,17 @@ class EncodedPayload
   end
 
   def build
-    started = monotonic_ms
     if json?
+      @schema_ms = 0
+      started = monotonic_ms
       encode_json
+      @encode_ms = monotonic_ms - started
     else
-      encode_avro
+      @schema_ms = derive_schema
+      started = monotonic_ms
+      encode_avro(@schema)
+      @encode_ms = monotonic_ms - started
     end
-    @encode_ms = monotonic_ms - started
     self
   end
 
@@ -71,9 +75,14 @@ class EncodedPayload
       @filename = "payload-#{@repeats}.json"
     end
 
-    def encode_avro
+    def derive_schema
+      started = monotonic_ms
+      @schema = Avro::Schema.parse(AvroSchema.derive(@source).to_json)
+      monotonic_ms - started
+    end
+
+    def encode_avro(schema)
       @records = Array.new(@repeats) { @source }
-      schema = Avro::Schema.parse(AvroSchema.derive(@source).to_json)
       @bytes = write_container_file(schema, @records)
       @content_type = "application/octet-stream"
       @filename = "payload-#{@repeats}.avro"

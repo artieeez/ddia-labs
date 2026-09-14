@@ -4,8 +4,9 @@
     <p class="lab__lede">
       Write a JSON object, pick a repeat count, then download it twice: as plain JSON
       (<strong>baseline</strong>) or as an Avro container that the browser decodes back to JSON.
-      Each run draws a timeline bar — encode (server), download (client), decode (client) —
-      and logs the full numbers to the console. Transfer size and latency are visible in the
+      Each run draws a timeline bar — schema derivation (server, Avro only), encode (server),
+      download (client), decode (client) — and logs the full numbers to the console. A checkbox
+      shows or hides the schema segment (on by default). Transfer size and latency are visible in the
       browser's network tab.
     </p>
   </header>
@@ -33,6 +34,13 @@
   <div class="lab__panel lab__actions">
     <button type="button" class="lab__button" data-action="encoder#encodeJson" data-encoder-target="jsonButton">Download as JSON (baseline)</button>
     <button type="button" class="lab__button lab__button--avro" data-action="encoder#encodeAvro" data-encoder-target="avroButton">Download as Avro (decode to JSON)</button>
+  </div>
+
+  <div class="lab__panel lab__options">
+    <label class="lab__checkbox" for="show_schema">
+      <input id="show_schema" type="checkbox" checked data-encoder-target="showSchema" data-action="change->encoder#toggleSchema">
+      Show Avro schema derivation segment
+    </label>
   </div>
 
   <div class="lab__panel lab__status" data-encoder-target="status" role="status" aria-live="polite"></div>

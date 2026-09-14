@@ -12,6 +12,8 @@ class EncodedPayloadTest < ActiveSupport::TestCase
     assert_equal "payload-3.json", payload.filename
     assert_equal [ { "a" => 1 }, { "a" => 1 }, { "a" => 1 } ], JSON.parse(payload.bytes)
     assert_operator payload.encode_ms, :>=, 0
+    assert_equal 0, payload.schema_ms
+    assert_equal 0, payload.schema_ms
   end
 
   test "encodes avro as a container file with one record per repeat" do
@@ -20,6 +22,8 @@ class EncodedPayloadTest < ActiveSupport::TestCase
     assert_equal "application/octet-stream", payload.content_type
     assert_equal "payload-3.avro", payload.filename
     assert_operator payload.encode_ms, :>=, 0
+    assert_operator payload.schema_ms, :>, 0
+    assert_operator payload.schema_ms, :>, 0
     assert_equal [ { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" }, { "a" => 1, "b" => "x" } ], read_records(payload.bytes)
   end
 

@@ -18,9 +18,11 @@ server-side encoding (Apache `avro` gem), client-side decoding back to JSON
   null → `null`, array → `array`, object → nested `record`. Invalid Avro field
   names, integers outside the `long` range (±2⁶³), and non-homogeneous arrays
   are rejected with a clear error (a schema editor may come later).
-- Timing: the server sends encode time in the `X-Encode-Ms` response header;
-  the client logs Avro decode time (`console.log` + on-screen panel). Transfer
-  size/latency is visible in the browser's network tab.
+- Timing: the server splits Avro time into schema derivation (`X-Schema-Ms`)
+  and container encoding (`X-Encode-Ms`); the client times the download and the
+  decode (`avro-js` container decode, or `JSON.parse` for the baseline) and
+  draws one segment per phase. Transfer size/latency is visible in the
+  browser's network tab.
 
 ## Run
 

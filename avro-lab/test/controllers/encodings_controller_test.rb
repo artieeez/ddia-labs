@@ -7,9 +7,12 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "textarea#json_text"
     assert_select "button[data-action='encoder#encodeJson']"
+    assert_select "button[data-action='encoder#encodeAvroNaive']"
     assert_select "button[data-action='encoder#encodeAvro']"
     assert_select "button[data-action='encoder#encodeAvroDeflate']"
+    assert_match(/baseline.*naive.*null codec.*deflate/m, response.body)
     assert_select "div.lab__note", text: /Ruby interpreter price/
+    assert_select "div.lab__note--callout", text: /Java or Go/
   end
 
   test "create encodes and downloads json" do
@@ -70,6 +73,24 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_match(/codec/, JSON.parse(response.body)["error"])
+  end
+
+  test "create encodes and downloads naive avro that still round-trips" do
+    post encoding_path, params: { encoding: { json_text: '{"a":1}', repeats: 2, format: "avro", naive: "true" } }
+
+    assert_response :success
+    assert_includes response.headers["Content-Disposition"], "payload-2-naive.avro"
+
+    io = StringIO.new(response.body.b, "rb")
+    reader = Avro::DataFile::Reader.new(io, Avro::IO::DatumReader.new)
+    assert_equal [ { "a" => 1 }, { "a" => 1 } ], reader.map(&:to_h)
+  end
+
+  test "create rejects naive encoding for json" do
+    post encoding_path, params: { encoding: { json_text: '{"a":1}', repeats: 1, format: "json", naive: "true" } }
+
+    assert_response :unprocessable_entity
+    assert_match(/naive/, JSON.parse(response.body)["error"])
   end
 
   test "create rejects out-of-range repeats" do

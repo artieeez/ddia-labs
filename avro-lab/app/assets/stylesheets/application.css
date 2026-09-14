@@ -189,6 +189,10 @@ body {
   font-size: 0.9em;
 }
 
+.lab__note--callout {
+  border-left: 4px solid var(--avro);
+}
+
 .timeline__legend {
   display: flex;
   flex-wrap: wrap;

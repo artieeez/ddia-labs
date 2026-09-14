@@ -1,8 +1,8 @@
 require "test_helper"
 
 class EncodedPayloadTest < ActiveSupport::TestCase
-  def build_payload(source_json, repeats: 3, format: "json", codec: nil)
-    EncodedPayload.build(json_text: source_json, repeats: repeats, format: format, codec: codec)
+  def build_payload(source_json, repeats: 3, format: "json", codec: nil, naive: false)
+    EncodedPayload.build(json_text: source_json, repeats: repeats, format: format, codec: codec, naive: naive)
   end
 
   test "encodes json as an array of repeats" do
@@ -53,6 +53,21 @@ class EncodedPayloadTest < ActiveSupport::TestCase
   test "rejects unknown codecs" do
     error = assert_raises(EncodedPayload::Error) { build_payload('{"a":1}', format: "avro", codec: "snappy") }
     assert_match(/codec must be one of/, error.message)
+  end
+
+  test "naive avro round-trips but pays per-record schema derivation" do
+    repeats = 200
+    naive = build_payload('{"a":1,"title":"x"}', repeats: repeats, format: "avro", naive: true)
+    null = build_payload('{"a":1,"title":"x"}', repeats: repeats, format: "avro", codec: "null")
+
+    assert_equal "payload-#{repeats}-naive.avro", naive.filename
+    assert_equal({ "a" => 1, "title" => "x" }, read_records(naive.bytes).first)
+    assert_operator naive.encode_ms, :>, null.encode_ms
+  end
+
+  test "rejects naive encoding for the json format" do
+    error = assert_raises(EncodedPayload::Error) { build_payload('{"a":1}', format: "json", naive: true) }
+    assert_match(/naive/, error.message)
   end
 
   test "avro round-trips nested values and floating point" do

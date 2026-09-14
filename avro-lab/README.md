@@ -6,15 +6,20 @@ server-side encoding (Apache `avro` gem), client-side decoding back to JSON
 
 ## What it does
 
-- Paste a JSON object, pick a **repeat size** (1–100 000), and encode it three ways:
+- Paste a JSON object, pick a **repeat size** (1–100 000), and encode it four ways:
   - **JSON**: `POST /encoding` returns `payload-<n>.json` — an array with the
-    object repeated `n` times.
-  - **Avro (null codec)**: the same payload written as an Avro object container
-    file (`payload-<n>.avro`, one record per repeat), blocks un-compressed.
+    object repeated `n` times (one C call).
+  - **Avro · naive**: the same container written by a deliberately naive
+    implementation that re-derives the schema for every record
+    (`payload-<n>-naive.avro`) — the pure-Ruby interpreter price balloons,
+    showing how a careless implementation can make encoding cost outweigh its
+    benefits.
+  - **Avro (null codec)**: the same payload as an Avro object container file
+    (`payload-<n>.avro`, one record per repeat), blocks un-compressed.
   - **Avro (deflate)**: the same container with zlib-compressed blocks
     (`payload-<n>-deflate.avro`) — smaller transfer, more encode/decode CPU.
-  The browser decodes both Avro variants back to JSON with `avro-js`, logs the
-  decode time, and offers the decoded JSON for download.
+  The browser decodes all three Avro variants back to JSON with `avro-js`,
+  logs the decode time, and offers the decoded JSON for download.
 - The schema is **auto-derived** from the JSON with deterministic rules:
   integer → `long`, float → `double`, string → `string`, boolean → `boolean`,
   null → `null`, array → `array`, object → nested `record`. Invalid Avro field

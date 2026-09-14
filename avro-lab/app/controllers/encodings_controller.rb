@@ -8,7 +8,8 @@ class EncodingsController < ApplicationController
       json_text: encoding[:json_text],
       repeats: encoding[:repeats],
       format: encoding[:format],
-      codec: encoding[:codec]
+      codec: encoding[:codec],
+      naive: encoding[:naive]
     )
     response.set_header("X-Encode-Ms", @payload.encode_ms.to_s)
     response.set_header("X-Schema-Ms", @payload.schema_ms.to_s)

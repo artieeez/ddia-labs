@@ -18,9 +18,10 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_branch == 'main')
-    # The cluster runs ARM nodes; this is a public repo so arm64 is built via
-    # QEMU emulation on the standard x86 runner.
-    runs-on: ubuntu-latest
+    # The cluster runs ARM nodes. Public repos get free native arm64 standard
+    # runners (GA 2025-08), so no QEMU emulation is needed.
+    # https://github.blog/changelog/2025-08-07-arm64-hosted-runners-for-public-repositories-are-now-generally-available/
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
     outputs:
@@ -31,7 +32,6 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
-      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v4
 
       - name: Log in to OCIR

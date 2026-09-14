@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: decision log in `.specs/STATE.md` (no formal design.md — Medium scope)
-**Status**: In Progress (T1 done)
+**Status**: In Progress (T1-T4 done)
 
 ---
 
@@ -68,7 +68,7 @@ T1 → T2 → T3 → T4 → T5
 
 ---
 
-### T2: Client go arm (direct fetch) + dev proxy
+### T2: Client go arm (direct fetch) + dev proxy ✅ COMPLETE
 
 **What**: `encoder_controller.js` — `encodeGo()` fetches `/go/v1/encode` directly (`{source, repeats, codec:"deflate"}`, no CSRF), reads `X-Schema-Ms`/`X-Encode-Ms`, renders `AVRO·GO` bar with schema/encode/download/decode; button 5 in `new.html.erb`; `.lab__button--go` accent + legend note in `application.css`; dev-only route + tiny controller proxying `/go/v1/encode` → `127.0.0.1:8081`; view test asserts button order.
 **Where**: `app/javascript/controllers/encoder_controller.js`
@@ -87,7 +87,7 @@ T1 → T2 → T3 → T4 → T5
 
 ---
 
-### T3: GitOps manifests (prepared for human push)
+### T3: GitOps manifests (prepared for human push) ✅ COMPLETE (push pending, human)
 
 **What**: In the artr-gitops working tree: `deployment.yaml` +containerPort 8081; new `service-go.yaml` (Service `ddia-labs-go` → 8081); new `middleware.yaml` (Traefik StripPrefix `/go`); `ingressroute.yaml` + `PathPrefix("/go")` route to `ddia-labs-go:8081` (same TLS). Left unstaged with a suggested commit message (repo's AGENTS.md: human pushes).
 **Where**: `apps/staging/ddia-labs/deployment.yaml`
@@ -106,7 +106,7 @@ T1 → T2 → T3 → T4 → T5
 
 ---
 
-### T4: Ship the Go encoder in the app image
+### T4: Ship the Go encoder in the app image ✅ COMPLETE
 
 **What**: `avro-lab/Dockerfile` multi-stage — golang build stage (`go vet`, `go test`, `CGO_ENABLED=0 go build`), static binary copied into final stage as UID 1000; new `avro-lab/bin/start` (start sidecar, wait `/healthz`, `exec bin/rails server`); `.dockerignore` keeps `go/` in the build context.
 **Where**: `avro-lab/Dockerfile`

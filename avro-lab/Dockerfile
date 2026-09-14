@@ -1,12 +1,25 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
+ARG RUBY_VERSION=4.0.5
+
 # Production image for the Avro Lab experiment (part of the ddia-labs monorepo).
 # Build: docker build -t ddia-labs ./avro-lab
-# No database, no jobs: a pure request/response Rails app. Runs as non-root UID
-# 1000 and listens on PORT (default 3000); the cluster sets PORT=8080.
+# No database, no jobs: a pure request/response Rails app plus a Go encoder
+# sidecar process that the /go ingress route targets directly. Runs as non-root
+# UID 1000; Rails listens on PORT (default 3000, cluster sets 8080) and the Go
+# sidecar on 0.0.0.0:8081.
 
-ARG RUBY_VERSION=4.0.5
+# Go encoder build stage: vet + test + static binary (no CGO).
+FROM docker.io/library/golang:1.25-alpine AS gobuild
+WORKDIR /build/go
+COPY go/go.mod go/go.sum ./
+RUN go mod download
+COPY go/ ./
+RUN go vet ./... && \
+    go test ./... && \
+    CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/goavro-lab .
+
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
@@ -61,6 +74,9 @@ USER 1000:1000
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
 
-# Start the Rails server (no database to prepare; secrets come from the environment)
+# Copy the static Go encoder binary from the go build stage.
+COPY --chown=rails:rails --from=gobuild /out/goavro-lab /rails/bin/goavro-lab
+
+# Start the Go sidecar, wait for it, then the Rails server (see bin/start).
 EXPOSE 8080
-CMD ["bin/rails", "server"]
+CMD ["bin/start"]

@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+# Starts the Go encoder sidecar (bound to 0.0.0.0:8081, reachable via the
+# /go ingress route) and waits for it before bringing up the Rails server, so
+# the first Go-arm request never races the sidecar's boot. If Go fails to come
+# up, crash the pod: k8s restart will retry, and Rails never serves a dead
+# sidecar silently.
+bin/goavro-lab &
+for i in $(seq 1 50); do
+  if curl -sf -o /dev/null http://127.0.0.1:8081/healthz; then
+    exit_server=0
+    break
+  fi
+  sleep 0.2
+done
+
+if [ "${exit_server:-1}" != "0" ]; then
+  echo "go encoder sidecar did not become healthy; exiting" >&2
+  exit 1
+fi
+
+exec bin/rails server

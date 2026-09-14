@@ -1,0 +1,298 @@
+:root {
+  --bg: #f6f5f2;
+  --panel: #ffffff;
+  --ink: #1c1917;
+  --muted: #6b6b6b;
+  --line: #e3e0da;
+  --accent: #0057b8;
+  --avro: #8b3dff;
+  --danger: #b3261e;
+  --time-encode: #0057b8;
+  --time-download: #2f9e63;
+  --time-decode: #8b3dff;
+  --time-track: #eceae5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.lab {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+  display: grid;
+  gap: 18px;
+}
+
+.lab__head h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.lab__lede {
+  margin: 0;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.lab__lede code {
+  background: var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+.lab__panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.lab__label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.lab__editor {
+  width: 100%;
+  min-height: 260px;
+  resize: vertical;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--ink);
+  background: #fcfbf9;
+}
+
+.lab__editor:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.lab__knob {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lab__knob input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.lab__knob-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  min-width: 5ch;
+  text-align: right;
+}
+
+.lab__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lab__button {
+  flex: 1;
+  min-width: 220px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.1s ease;
+}
+
+.lab__button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lab__button--avro:hover:not(:disabled) {
+  border-color: var(--avro);
+  color: var(--avro);
+}
+
+.lab__button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lab__button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.lab__status.is-busy .run-bar {
+  opacity: 0.45;
+}
+
+.timeline__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend__swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend__swatch--encode { background: var(--time-encode); }
+.legend__swatch--download { background: var(--time-download); }
+.legend__swatch--decode { background: var(--time-decode); }
+
+.legend__note {
+  flex-basis: 100%;
+  opacity: 0.85;
+}
+
+.lab__status .run-bar {
+  margin-bottom: 14px;
+}
+
+.run-bar__track {
+  display: flex;
+  gap: 2px;
+  height: 18px;
+  max-width: 100%;
+  background: var(--time-track);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.run-bar__seg {
+  height: 100%;
+}
+
+.run-bar__seg--encode { background: var(--time-encode); }
+.run-bar__seg--download { background: var(--time-download); }
+.run-bar__seg--decode { background: var(--time-decode); }
+
+.run-bar__label {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.run-bar__badge--ok {
+  color: #2f9e63;
+  font-weight: 700;
+}
+
+.run-bar__badge--bad {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.run-bar__error {
+  color: var(--danger);
+  font-size: 13px;
+  padding: 8px 10px;
+  background: #fdf1f0;
+  border: 1px solid #f2c2be;
+  border-radius: 8px;
+}
+
+/* Landing page (DDIA Labs) */
+
+.home {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+}
+
+.home__head h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.home__lede {
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.home__list {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.home__card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.home__card:hover {
+  border-color: var(--accent);
+}
+
+.home__card-link {
+  display: block;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.home__card h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.home__card p {
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+
+.home__card-go {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.home__card--empty {
+  color: var(--muted);
+}
+
+.home__card--empty h2 {
+  color: var(--ink);
+}

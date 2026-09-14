@@ -1,0 +1,8 @@
+/.git
+.github
+log/*
+tmp/*
+storage/*
+config/master.key
+.bundle
+*.local

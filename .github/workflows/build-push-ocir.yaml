@@ -1,0 +1,120 @@
+name: Build and push OCIR
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  REGISTRY: vcp.ocir.io
+  OCIR_NAMESPACE: axtvnrdemzo7
+  IMAGE_NAME: ddia-labs
+
+jobs:
+  build:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    # The cluster runs ARM nodes; this is a public repo so arm64 is built via
+    # QEMU emulation on the standard x86 runner.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      sha_tag: ${{ steps.meta.outputs.sha_tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to OCIR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.OCIR_USERNAME }}
+          password: ${{ secrets.OCIR_AUTH_TOKEN }}
+
+      - name: Image tags
+        id: meta
+        env:
+          HEAD_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          SHORT_SHA="$(echo "$HEAD_SHA" | cut -c1-7)"
+          echo "sha_tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image=${{ env.REGISTRY }}/${{ env.OCIR_NAMESPACE }}/${{ env.IMAGE_NAME }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./avro-lab
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha_tag }}
+            ${{ steps.meta.outputs.image }}:staging-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  update-gitops:
+    needs: build
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check for GITOPS_TOKEN
+        id: gate
+        env:
+          GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
+        run: |
+          if [ -z "$GITOPS_TOKEN" ]; then
+            echo "GITOPS_TOKEN not set — skipping gitops bump (image was still pushed)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout artr-gitops
+        if: steps.gate.outputs.skip == 'false'
+        uses: actions/checkout@v7
+        with:
+          repository: artieeez/artr-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Bump staging image tag
+        if: steps.gate.outputs.skip == 'false'
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.sha_tag }}
+        run: |
+          FILE=gitops/apps/staging/ddia-labs/deployment.yaml
+          if ! grep -q 'image: vcp.ocir.io/axtvnrdemzo7/ddia-labs:' "$FILE"; then
+            echo "Expected image line not found in $FILE" >&2
+            exit 1
+          fi
+          sed -i "s|image: vcp.ocir.io/axtvnrdemzo7/ddia-labs:.*|image: ${IMAGE}|" "$FILE"
+
+      - name: Commit and push
+        if: steps.gate.outputs.skip == 'false'
+        working-directory: gitops
+        run: |
+          git config user.name "ddia-labs-ci-bot"
+          git config user.email "ddia-labs-ci-bot@users.noreply.github.com"
+          git add apps/staging/ddia-labs/deployment.yaml
+          if git diff --staged --quiet; then
+            echo "No image change"
+            exit 0
+          fi
+          git commit -m "chore(ddia-labs): bump staging image to ${{ needs.build.outputs.sha_tag }}"
+          git push

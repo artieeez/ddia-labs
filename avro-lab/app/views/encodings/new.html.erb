@@ -1,0 +1,39 @@
+<div class="lab" data-controller="encoder">
+  <header class="lab__head">
+    <h1>Avro Lab</h1>
+    <p class="lab__lede">
+      Write a JSON object, pick a repeat count, then download it twice: as plain JSON
+      (<strong>baseline</strong>) or as an Avro container that the browser decodes back to JSON.
+      Each run draws a timeline bar — encode (server), download (client), decode (client) —
+      and logs the full numbers to the console. Transfer size and latency are visible in the
+      browser's network tab.
+    </p>
+  </header>
+
+  <div class="lab__panel">
+    <label class="lab__label" for="json_text">JSON source</label>
+    <textarea id="json_text" class="lab__editor" data-encoder-target="jsonText" spellcheck="false" autocomplete="off" rows="14"><%= default_sample_json %></textarea>
+  </div>
+
+  <div class="lab__panel">
+    <label class="lab__label" for="repeats">Repeat size</label>
+    <div class="lab__knob">
+      <input id="repeats" type="range" min="1" max="100000" step="1" value="100" list="repeat-ticks" data-encoder-target="repeats" data-action="input->encoder#syncRepeats">
+      <output class="lab__knob-value" data-encoder-target="repeatOutput">100</output>
+    </div>
+    <datalist id="repeat-ticks">
+      <option value="1"></option>
+      <option value="1000"></option>
+      <option value="10000"></option>
+      <option value="50000"></option>
+      <option value="100000"></option>
+    </datalist>
+  </div>
+
+  <div class="lab__panel lab__actions">
+    <button type="button" class="lab__button" data-action="encoder#encodeJson" data-encoder-target="jsonButton">Download as JSON (baseline)</button>
+    <button type="button" class="lab__button lab__button--avro" data-action="encoder#encodeAvro" data-encoder-target="avroButton">Download as Avro (decode to JSON)</button>
+  </div>
+
+  <div class="lab__panel lab__status" data-encoder-target="status" role="status" aria-live="polite"></div>
+</div>

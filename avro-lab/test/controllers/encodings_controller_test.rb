@@ -9,6 +9,7 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[data-action='encoder#encodeJson']"
     assert_select "button[data-action='encoder#encodeAvro']"
     assert_select "button[data-action='encoder#encodeAvroDeflate']"
+    assert_select "div.lab__note", text: /Ruby interpreter price/
   end
 
   test "create encodes and downloads json" do

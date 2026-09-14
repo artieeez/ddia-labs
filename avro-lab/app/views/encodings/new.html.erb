@@ -46,4 +46,12 @@
   </div>
 
   <div class="lab__panel lab__status" data-encoder-target="status" role="status" aria-live="polite"></div>
+
+  <div class="lab__panel lab__note">
+    <p><strong>Who wins here?</strong> This lab pays the <strong>Ruby interpreter price</strong> on the
+    encode bar — the JSON arm is a single C call (<code>json</code> gem); the Avro arm is a pure-Ruby
+    gem encoding field-by-field. Avro earns its cost where it's amortized: <strong>write once, read
+    many</strong> (Kafka-style pipelines), where compactness and schema evolution matter — not
+    per-request CPU on a web server.</p>
+  </div>
 </div>

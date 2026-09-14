@@ -167,6 +167,28 @@ body {
   accent-color: var(--accent);
 }
 
+.lab__note {
+  padding-block: 12px;
+}
+
+.lab__note p {
+  margin: 0;
+  max-width: 70ch;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lab__note strong {
+  color: var(--ink);
+}
+
+.lab__note code {
+  background: var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
 .timeline__legend {
   display: flex;
   flex-wrap: wrap;

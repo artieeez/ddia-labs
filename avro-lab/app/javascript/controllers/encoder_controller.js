@@ -16,7 +16,7 @@ import { Controller } from "@hotwired/stimulus"
 //     <div data-encoder-target="status"></div>
 //   </div>
 export default class extends Controller {
-  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "naiveButton", "avroButton", "avroDeflateButton", "status", "showSchema"]
+  static targets = ["jsonText", "repeats", "repeatOutput", "jsonButton", "naiveButton", "avroButton", "avroDeflateButton", "goButton", "status", "showSchema"]
 
   connect() {
     this.statusTarget.replaceChildren()
@@ -40,6 +40,13 @@ export default class extends Controller {
 
   encodeAvroDeflate() {
     this.encode("avro", "deflate")
+  }
+
+  encodeGo() {
+    // The Go arm bypasses Rails entirely: the browser posts straight to the
+    // /go/v1/encode path (routed at the ingress in prod, via a dev-only Rails
+    // proxy locally), and both timing headers come from the Go process.
+    this.encode("go", "deflate")
   }
 
   toggleSchema() {
@@ -82,15 +89,24 @@ export default class extends Controller {
 
     this.setBusy(true)
     try {
-      const response = await fetch("/encoding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/octet-stream, application/json, text/plain",
-          "X-CSRF-Token": csrfToken()
-        },
-        body: JSON.stringify({ encoding: { json_text: sourceText, repeats, format, codec, naive: naive || undefined } })
-      })
+      const response = format === "go"
+        ? await fetch("/go/v1/encode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/octet-stream, application/json, text/plain"
+          },
+          body: JSON.stringify({ source: JSON.parse(sourceText), repeats: Number(repeats), codec })
+        })
+        : await fetch("/encoding", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/octet-stream, application/json, text/plain",
+            "X-CSRF-Token": csrfToken()
+          },
+          body: JSON.stringify({ encoding: { json_text: sourceText, repeats, format, codec, naive: naive || undefined } })
+        })
       if (!response.ok) {
         throw new Error(await errorMessage(response))
       }
@@ -101,7 +117,7 @@ export default class extends Controller {
       const bytes = await response.arrayBuffer()
       const transferMs = performance.now() - transferStarted
 
-      const segments = format === "avro"
+      const segments = (format === "avro" || format === "go")
         ? [
           { key: "schema", label: "schema", ms: schemaMs },
           { key: "encode", label: "encode", ms: encodeMs },
@@ -113,11 +129,12 @@ export default class extends Controller {
         ]
       const meta = { bytes: bytes.byteLength }
 
-      if (format === "avro") {
+      if (format === "avro" || format === "go") {
+        const suffix = format === "go" ? "-go" : ""
         // Keep the .avro download inside the user gesture. The decoded JSON
         // download happens right after decoding and may be blocked by the
         // browser (post-await), which the network tab will show.
-        download(bytes, `payload-${repeats}.avro`, "application/octet-stream")
+        download(bytes, `payload-${repeats}${suffix}.avro`, "application/octet-stream")
         const details = await this.decodeAvro(bytes, sourceText, repeats)
         download(details.prettyDecoded, `payload-${repeats}-decoded.json`)
         segments.push({ key: "decode", label: "decode", ms: details.decodeMs })
@@ -167,6 +184,7 @@ export default class extends Controller {
     this.naiveButtonTarget.disabled = busy
     this.avroButtonTarget.disabled = busy
     this.avroDeflateButtonTarget.disabled = busy
+    this.goButtonTarget.disabled = busy
     this.statusTarget.classList.toggle("is-busy", busy)
   }
 }
@@ -240,7 +258,7 @@ class Timeline {
   normalize(run) {
     return {
       ...run,
-      formatLabel: run.format.toUpperCase(),
+      formatLabel: run.format === "go" ? "AVRO·GO" : run.format.toUpperCase(),
       totalMs: () => run.error ? 0 : run.segments.reduce((sum, segment) => sum + segment.ms, 0)
     }
   }
@@ -253,7 +271,7 @@ class Timeline {
       <span class="legend__item"><i class="legend__swatch legend__swatch--schema"></i>schema (server, Avro)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--download"></i>download (client)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--decode"></i>decode (client)</span>
-      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline · deflate = zlib-compressed blocks (smaller download, more CPU) · naive = schema re-derived per record · encode bar = Ruby implementation: avro is a pure-Ruby gem, json is a C extension (≈20x gap; single-shot, expect ±15% noise)</span>`
+      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline · deflate = zlib-compressed blocks (smaller download, more CPU) · naive = schema re-derived per record · go = separate compiled endpoint (goavro, same pod, /go route): schema + encode timed in-process, no Rails hop · encode bar = Ruby implementation: avro is a pure-Ruby gem, json is a C extension (≈20x gap; single-shot, expect ±15% noise)</span>`
     return legend
   }
 

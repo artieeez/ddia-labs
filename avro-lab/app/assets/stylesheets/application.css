@@ -137,6 +137,11 @@ body {
   color: var(--avro);
 }
 
+.lab__button--go:hover:not(:disabled) {
+  border-color: #00add8;
+  color: #00add8;
+}
+
 .lab__button:active:not(:disabled) {
   transform: translateY(1px);
 }

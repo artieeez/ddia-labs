@@ -15,4 +15,10 @@ Rails.application.routes.draw do
   # The Avro vs JSON experiment entry point; the form posts to /encoding.
   get "avro", to: "encodings#new"
   resource :encoding, only: [ :new, :create ]
+
+  # Dev/test-only passthrough to the Go encoder sidecar (see GoProxyController).
+  # Production routes /go/v1/encode straight to the Go process at the ingress.
+  if Rails.env.development? || Rails.env.test?
+    post "go/v1/encode", to: "go_proxy#create", as: :go_v1_encode
+  end
 end

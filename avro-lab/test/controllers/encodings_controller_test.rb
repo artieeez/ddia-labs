@@ -10,7 +10,8 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_select "button[data-action='encoder#encodeAvroNaive']"
     assert_select "button[data-action='encoder#encodeAvro']"
     assert_select "button[data-action='encoder#encodeAvroDeflate']"
-    assert_match(/baseline.*naive.*null codec.*deflate/m, response.body)
+    assert_select "button[data-action='encoder#encodeGo']"
+    assert_match(/baseline.*naive.*null codec.*deflate.*Go endpoint/m, response.body)
     assert_select "div.lab__note", text: /Ruby interpreter price/
     assert_select "div.lab__note--callout", text: /Java or Go/
   end

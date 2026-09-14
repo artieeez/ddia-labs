@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: decision log in `.specs/STATE.md` (no formal design.md — Medium scope)
-**Status**: In Progress (T1-T4 done)
+**Status**: All tasks complete — Verifier pending
 
 ---
 
@@ -125,7 +125,7 @@ T1 → T2 → T3 → T4 → T5
 
 ---
 
-### T5: CI go job + docs
+### T5: CI go job + docs ✅ COMPLETE
 
 **What**: `.github/workflows/ci.yml` — `go` job (`setup-go`, `go vet`, `go test ./...` in `avro-lab/go`); `avro-lab/README.md` — fifth way (direct Go endpoint, mirror rules, timing semantics); legend note already in T2.
 **Where**: `.github/workflows/ci.yml`

@@ -82,19 +82,19 @@ this arm, so the timeline shows pure compiled-encoder timing.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| GO-01 | P1 | Design | Pending |
-| GO-02 | P1 | In Tasks | Pending |
-| GO-03 | P1 | In Tasks | Pending |
-| GO-04 | P1 | In Tasks | Pending |
-| GO-05 | P1 | Design | Pending |
-| GO-06 | P1 | In Tasks | Pending |
-| GO-07 | P1 | Design | Pending |
-| GO-08 | P1 | Design | Pending |
-| GO-09 | Edge | In Tasks | Pending |
-| GO-10 | Edge | In Tasks | Pending |
-| GO-11 | Edge | In Tasks | Pending |
+| GO-01 | P1 | Verifying | Pending |
+| GO-02 | P1 | Verifying | Pending |
+| GO-03 | P1 | Verifying | Pending |
+| GO-04 | P1 | Verifying | Pending |
+| GO-05 | P1 | Verifying | Pending |
+| GO-06 | P1 | Verifying | Pending |
+| GO-07 | P1 | Verifying | Pending |
+| GO-08 | P1 | Verifying | Pending |
+| GO-09 | Edge | Verifying | Pending |
+| GO-10 | Edge | Verifying | Pending |
+| GO-11 | Edge | Verifying | Pending |
 
-**Coverage:** 11 total, 7 mapped to T1, 4 unmapped
+**Coverage:** 11 total, 11 mapped to tasks, 0 unmapped
 
 ---
 

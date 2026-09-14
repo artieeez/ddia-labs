@@ -6,7 +6,7 @@ server-side encoding (Apache `avro` gem), client-side decoding back to JSON
 
 ## What it does
 
-- Paste a JSON object, pick a **repeat size** (1–100 000), and encode it four ways:
+- Paste a JSON object, pick a **repeat size** (1–100 000), and encode it five ways:
   - **JSON**: `POST /encoding` returns `payload-<n>.json` — an array with the
     object repeated `n` times (one C call).
   - **Avro · naive**: the same container written by a deliberately naive
@@ -18,7 +18,14 @@ server-side encoding (Apache `avro` gem), client-side decoding back to JSON
     (`payload-<n>.avro`, one record per repeat), blocks un-compressed.
   - **Avro (deflate)**: the same container with zlib-compressed blocks
     (`payload-<n>-deflate.avro`) — smaller transfer, more encode/decode CPU.
-  The browser decodes all three Avro variants back to JSON with `avro-js`,
+  - **Avro (Go endpoint)**: the browser POSTs `{source, repeats, codec}`
+    straight to `/go/v1/encode` — the same ingress host, path-routed to a Go
+    sidecar process inside the app container (goavro, deflate). The Go process
+    derives the Avro schema itself (mirroring `AvroSchema.derive`: int→long,
+    float→double, `Root_<path>` record names, homogeneous arrays) and measures
+    both `X-Schema-Ms` and `X-Encode-Ms` in-process, so the bar shows pure
+    compiled-encoder timing with no Rails hop (`payload-<n>-go.avro`).
+  The browser decodes all four Avro variants back to JSON with `avro-js`,
   logs the decode time, and offers the decoded JSON for download.
 - The schema is **auto-derived** from the JSON with deterministic rules:
   integer → `long`, float → `double`, string → `string`, boolean → `boolean`,

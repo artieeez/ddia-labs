@@ -82,3 +82,20 @@ jobs:
         env:
           RAILS_ENV: test
         run: bin/rails test
+
+  go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: avro-lab/go
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: avro-lab/go/go.mod
+
+      - name: Vet and test the Go encoder
+        run: go vet ./... && go test ./...

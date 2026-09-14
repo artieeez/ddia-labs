@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 2,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::when a code layer s approved test type is manual browser e2e the discrimination sensor must scope mutants to automated layers a js layer surviving mutant is expected not a defect",
+      "text": "When a code layer's approved test type is manual browser E2E, the discrimination sensor must scope mutants to automated layers; a JS-layer surviving mutant is expected, not a defect.",
+      "signal": "surviving_mutant",
+      "scope": "javascript",
+      "status": "candidate",
+      "features": [
+        "go-avro-endpoint"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "encoder_controller.js: encodeGo() fetch URL mutation (JS layer), sanctioned manual E2E (javascript)"
+      ],
+      "created": "2026-09-14T21:38:06Z",
+      "last_seen": "2026-09-14T21:38:06Z"
+    }
+  ]
+}

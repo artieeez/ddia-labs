@@ -24,7 +24,6 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Content-Disposition"], "attachment"
     assert_includes response.headers["Content-Disposition"], "payload-2.json"
     assert response.headers.key?("X-Encode-Ms")
-    assert_equal "0", response.headers["X-Schema-Ms"]
     assert response.headers.key?("X-Schema-Ms")
     assert_equal "0", response.headers["X-Schema-Ms"]
     assert_equal [ { "a" => 1 }, { "a" => 1 } ], JSON.parse(response.body)
@@ -37,7 +36,6 @@ class EncodingsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "application/octet-stream", response.media_type
     assert_includes response.headers["Content-Disposition"], "payload-2.avro"
     assert response.headers.key?("X-Encode-Ms")
-    assert_match(/\A\d+(\.\d+)?\z/, response.headers["X-Schema-Ms"])
     assert response.headers.key?("X-Schema-Ms")
     assert_match(/\A\d+(\.\d+)?\z/, response.headers["X-Schema-Ms"])
     assert_operator Float(response.headers["X-Schema-Ms"]), :>, 0

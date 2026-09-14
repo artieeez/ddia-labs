@@ -244,7 +244,7 @@ class Timeline {
       <span class="legend__item"><i class="legend__swatch legend__swatch--schema"></i>schema (server, Avro)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--download"></i>download (client)</span>
       <span class="legend__item"><i class="legend__swatch legend__swatch--decode"></i>decode (client)</span>
-      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline · deflate = zlib-compressed blocks (smaller download, more CPU)</span>`
+      <span class="legend__note">bar width ∝ total ms · sub-millisecond segments floored to stay visible · decode = Avro container decode, or JSON.parse for the baseline · deflate = zlib-compressed blocks (smaller download, more CPU) · encode bar = Ruby implementation: avro is a pure-Ruby gem, json is a C extension (≈20x gap; single-shot, expect ±15% noise)</span>`
     return legend
   }
 

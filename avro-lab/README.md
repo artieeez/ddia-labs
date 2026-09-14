@@ -25,6 +25,19 @@ server-side encoding (Apache `avro` gem), client-side decoding back to JSON
   decode (`avro-js` container decode, or `JSON.parse` for the baseline) and
   draws one segment per phase. Transfer size/latency is visible in the
   browser's network tab.
+- **Reading the encode bar honestly**: `X-Encode-Ms` measures the *Ruby
+  implementation* of each format, and the two are not symmetric — the JSON arm
+  is a single C call (`json` gem), the Avro arm is pure-Ruby per-field encoding
+  (`avro-ruby` gem), which shows as roughly a 20x gap on identical records.
+  That is a language-binding artifact, not a property of the formats. The Avro
+  path is warmed at boot so the first run isn't polluted by autoload/YJIT;
+  measurements are still single-shot (expect ±10-15% run-to-run noise).
+- **Why deflate looks almost free**: compression runs per 64 KB block during
+  the write loop, and zlib crushes small repetitive payloads in ~ms, so the
+  encode delta null→deflate is ~2 ms at 10k records — smaller than the noise.
+  Where deflate pays off is the bytes column (920 KB → 5 KB), i.e. transfer
+  cost, which a localhost lab can't show; on a real network link that gap is
+  the whole point.
 
 ## Run
 

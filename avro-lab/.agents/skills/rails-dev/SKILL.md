@@ -27,7 +27,7 @@ metadata:
 This table is an index, not the content. The conventions live in the reference files, not in this table, the codebase, or general Rails knowledge. Match the task to the rows below and **read those files end to end before you design, write, review, or analyze the code**. Reading the row is not reading the reference; guessing from the codebase is how the wrong convention gets shipped.
 
 | Task | Reference |
-|------|-----------|
+| ------ | ----------- |
 | Models, validations, associations, business logic | `references/model.md` |
 | Custom validators, validation rules reused across models | `references/validator.md` |
 | Error handling, rescue boundaries, reporting, retries | `references/error-handling.md` |
@@ -204,4 +204,3 @@ These conventions are adapted from, and may diverge from, these reference apps:
 
 - [basecamp/fizzy](https://github.com/basecamp/fizzy)
 - [railswhey/app](https://github.com/railswhey/app)
-

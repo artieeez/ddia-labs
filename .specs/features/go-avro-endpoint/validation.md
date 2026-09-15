@@ -111,6 +111,7 @@ Run in a throwaway git worktree at `/tmp/verif-scratch` (HEAD 62e4007); real tre
 **What works**: derived schemas byte-identical to Ruby on a gnarly sample; deflate containers smaller; full round-trips (incl. nested records, record arrays, longs >2^53); card-carrying error mirrors; timing headers measured in-process; dev proxy relays errors precisely; image boots Go+Rails with correct port split.
 
 **Issues found** (ranked):
+
 1. (Non-blocking, scope-consideration) No automated assertion exists that the go arm posts to `/go/v1/encode` — the JS layer has no test infra (repo-wide, all five arms). Recommended optional follow-up: a minimal Node-based controller unit test asserting `encodeGo`'s fetch URL + payload, or accept manual E2E per the approved matrix.
 2. (Minor) `bin/start` wait-then-exec ordering has no automated test (container smoke only).
 3. (Minor, precision) `Root_<name>_3` suffix case not directly asserted; name-error message regex rendering differs cosmetically from Ruby's.

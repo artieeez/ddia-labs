@@ -108,7 +108,7 @@ end
 The only design question: **what noun does this represent?**
 
 | Request | Resource |
-|---|---|
+| --- | --- |
 | "Let users close cards" | `Cards::ClosuresController` (create/destroy) |
 | "Let users follow a card" | `Cards::WatchesController` (create/destroy) |
 | "Let users assign cards" | `Cards::AssignmentsController` (create/destroy) |

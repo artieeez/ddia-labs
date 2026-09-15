@@ -27,7 +27,7 @@ end
 The `mailer` layout (`app/views/layouts/mailer.html.erb`) carries a small `<style>` block. Views use its classes rather than an external stylesheet.
 
 | Class | Use |
-|---|---|
+| --- | --- |
 | `title` | main heading |
 | `subtitle` | secondary line under the title |
 | `code` | monospace code or token |

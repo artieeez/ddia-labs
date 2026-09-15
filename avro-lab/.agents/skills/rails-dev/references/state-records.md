@@ -176,7 +176,7 @@ The controller for a state record is a singular `resource` with `create`/`destro
 ## Record or boolean?
 
 | Use a record | Use a boolean |
-|---|---|
+| --- | --- |
 | When/who/why matters | Purely technical flag (`processed`, `cached`) |
 | It's a business event | Timestamp and actor are irrelevant |
 | You query "recently X" or "X by user" | Simple, high-churn toggle on millions of rows |
@@ -202,8 +202,8 @@ class BackfillClosures < ActiveRecord::Migration[8.0]
 end
 ```
 
-3. Switch the model to the record (the concern), deploy, verify.
-4. Only then drop the boolean column, in a separate migration.
+1. Switch the model to the record (the concern), deploy, verify.
+2. Only then drop the boolean column, in a separate migration.
 
 ---
 

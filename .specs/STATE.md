@@ -20,7 +20,7 @@
 
 Snapshot from Thursday sessions on `ddia-labs` main @ `2cfa933` (pre-Go-arm):
 
-- Deployed and verified live: Landing (`/`) → Avro Lab (`/avro`) at https://ddia.artr.com.br.
+- Deployed and verified live: Landing (`/`) → Avro Lab (`/avro`) at <https://ddia.artr.com.br>.
 - Arms: 1 JSON (baseline), 2 Avro · naive (schema re-derived per record), 3 Avro null, 4 Avro deflate. Timeline appends newer runs at the bottom; schema-segment checkbox; notes under the timeline.
 - Pipeline: push main → CI → arm64 image (native runner) → OCIR → gitops tag bump → Argo CD sync. GitOps manifests live in the separate `artr-gitops` repo (human pushes).
 - Ship hashes: image `sha-<git>` tags; latest commits pre-Go-arm `2cfa933`, deployed `7209019`.

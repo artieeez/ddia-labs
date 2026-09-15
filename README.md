@@ -4,13 +4,13 @@ Hands-on experiments from the **Designing Data-Intensive Applications** book clu
 (craft and code club). Each experiment lives in its own directory as a small,
 self-contained app — source code, docs, and its own deployment notes.
 
-Live at **https://ddia.artr.com.br** (landing page linking each experiment).
+Live at **<https://ddia.artr.com.br>** (landing page linking each experiment).
 
 ## Experiments
 
 | Experiment | Dir | What it does | URL |
 |---|---|---|---|
-| [Avro Lab](avro-lab/README.md) | `avro-lab/` | Rails app benchmarking Avro vs JSON for the same payload: server-side encoding (Apache `avro` gem), browser-side decoding (Apache `avro-js`), encode/download/decode timeline per run | https://ddia.artr.com.br/avro |
+| [Avro Lab](avro-lab/README.md) | `avro-lab/` | Rails app benchmarking Avro vs JSON for the same payload: server-side encoding (Apache `avro` gem), browser-side decoding (Apache `avro-js`), encode/download/decode timeline per run | <https://ddia.artr.com.br/avro> |
 
 ## Conventions
 

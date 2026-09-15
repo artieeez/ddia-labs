@@ -101,5 +101,5 @@ this arm, so the timeline shows pure compiled-encoder timing.
 ## Success Criteria
 
 - [ ] At ×10,000 the Go arm's encode segment is a visibly smaller fraction of the bar than the Ruby arms for the same records
-- [ ] The Go arm passes all rails and Go tests and round-trips with the ✓ badge on https://ddia.artr.com.br/avro
+- [ ] The Go arm passes all rails and Go tests and round-trips with the ✓ badge on <https://ddia.artr.com.br/avro>
 - [ ] `curl https://ddia.artr.com.br/go/healthz` returns 200 and `POST /go/v1/encode` returns a container (proves ingress-level routing works)

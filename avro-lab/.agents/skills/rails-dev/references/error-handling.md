@@ -11,7 +11,7 @@ Where the error *classes* live (inline, base per context, naming) is in `referen
 All three keep a failure visible; they differ by how long it lives and who acts on it.
 
 | The failure is… | Handle it by |
-|---|---|
+| --- | --- |
 | Durable state the system acts on later (an access grant, a webhook delivery, a sync run) | **Record on the record**: `mark_failed(error:)`, then `failed?`. Queryable, shown in the admin, re-acted on by a job. |
 | Exceptional, handed to a boundary to retry, render, or report | **Raise a narrow domain error**; the boundary rescues it. |
 | An expected, request-scoped outcome the immediate caller branches on, with no record to write it to | **Return a tagged tuple** `[:ok, value]` / `[:error, reason]`. |

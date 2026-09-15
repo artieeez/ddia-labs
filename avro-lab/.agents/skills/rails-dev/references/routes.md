@@ -40,7 +40,7 @@ maps to `app/controllers/admin/...`, `scope module: :members` to
 Three tools, three prefixes. Pick the least that does the job.
 
 | Helper | Path | Module | Route name |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `namespace :admin` | `/admin` | `Admin::` | `admin_` |
 | `scope module: :cards` | — | `Cards::` | — |
 | `scope :members, module: :members, as: :members` | `/members` | `Members::` | `members_` |

@@ -19,7 +19,7 @@ Triage findings in this order; spend the most attention near the top.
 ## Anti-patterns to flag
 
 | Smell | Use instead | Reference |
-|---|---|---|
+| --- | --- | --- |
 | Service object (`*Service`, `*Creator`, `*Manager`) | a method on the model that owns the data, or a noun-named PORO | `model.md` |
 | Verb-named class | a noun (the concept); the verb is a method | `model.md` |
 | Custom controller action (non-REST) | a new noun-named resource | `crud.md` |
@@ -58,34 +58,41 @@ Triage findings in this order; spend the most attention near the top.
 ## Per-area checklist
 
 **Models**
+
 - Business logic on the model, not a service object; classes are nouns, methods are verbs
 - State with a when/who is a record; a single transition is a timestamp
 - Concerns extract repeated behavior; `_commit` callbacks for external side effects
 
 **Controllers / API**
+
 - Only the seven REST actions; new behavior is a new resource
 - No business logic; queries load through the parent / current user
 - Strong parameters on every write; authorization via model predicates
 - JSON errors use the single envelope; correct status codes
 
 **Views**
+
 - Turbo first (Streams/Frames/Broadcasts); Stimulus only for what Turbo can't do
 - Fragment caching mirrors the data with `touch:`; no manual invalidation
 
 **Jobs**
+
 - `perform` calls a model `_now` method; no business logic in the job
 - Enqueue from `after_create_commit`; retries use `:polynomially_longer`; long jobs use continuations
 - Work is idempotent (at-least-once delivery)
 
 **Tests**
+
 - Minitest + fixtures; assert behavior; cover happy path and edge cases
 - Auth flows tested for allowed and denied paths
 
 **Data**
+
 - ULID keys; soft references (no FK constraint); business state as records, not booleans
 - A new table's full shape in one migration per branch
 
 **Security**
+
 - No secrets/PII in logs; signatures verified; redirects validated; no enumeration leaks
 
 ---

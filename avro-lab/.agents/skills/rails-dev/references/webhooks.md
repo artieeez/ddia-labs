@@ -180,12 +180,14 @@ Assert the handler is idempotent (applying the same event twice == once) and ord
 ## Checklist
 
 **Outbound**
+
 - Delivery is persisted before sending; each delivery is a state record (`pending` → `completed`/`errored`), signed, bounded, and audited
 - Subscriptions are an allowlist (`PERMITTED_ACTIONS`); dispatch happens off the request path
 - Destination failures mark `completed` (no job retry); bugs mark `errored!` and re-raise
 - A circuit breaker deactivates a webhook after sustained failure; reactivation is manual
 
 **Inbound**
+
 - One inbox table per integration; verify the signature, store, ack fast, process async
 - Ingest dedupes by a unique natural key; the relay recovers stranded events (at-least-once)
 - Handlers are idempotent and order-insensitive: re-fetch current state from the source API when one exists, else use a watermark plus a tombstone for deletes

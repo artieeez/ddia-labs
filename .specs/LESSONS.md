@@ -14,7 +14,8 @@ _none_
 
 Seen once or not yet corroborated. Tracked, not trusted.
 
-### L-001 - When a code layer's approved test type is manual browser E2E, the discrimination sensor must scope mutants to automated layers; a JS-layer surviving mutant is expected, not a defect.
+### L-001 - When a code layer's approved test type is manual browser E2E, the discrimination sensor must scope mutants to automated layers; a JS-layer surviving mutant is expected, not a defect
+
 - signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `javascript` · harmful: 0
 - features: go-avro-endpoint
 - evidence: encoder_controller.js: encodeGo() fetch URL mutation (JS layer), sanctioned manual E2E (javascript)

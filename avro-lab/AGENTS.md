@@ -20,4 +20,4 @@ Minitest tests, style rules.
   container files back to JSON and logs decode time.
 - One route surface: the editor page (GET) and the encode-and-download POST.
 
-## Agents do not commit or push unless the human asks.
+## Agents do not commit or push unless the human asks

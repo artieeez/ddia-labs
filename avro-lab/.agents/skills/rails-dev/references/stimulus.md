@@ -51,7 +51,7 @@ export default class extends Controller {
 ## Wiring (the data attributes)
 
 | Attribute | Purpose |
-|---|---|
+| --- | --- |
 | `data-controller="clipboard"` | attach the controller to this element |
 | `data-action="click->clipboard#copy"` | call `copy()` on the event (event name optional for an element's default) |
 | `data-clipboard-target="successIcon"` | expose the element as `this.successIconTarget` |

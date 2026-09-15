@@ -167,7 +167,7 @@ raise
 ## Use the right level
 
 | Level | Meaning |
-|-------|---------|
+| ------- | --------- |
 | `debug` | Detailed info useful only in development |
 | `info` | Normal operations worth noting (processed, created, sent) |
 | `warn` | Succeeded but something is off, deserves attention |
